@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accessible Multi-Factor Authentication (A-MFA)</title>
+  <meta name="description" content="Enterprise-grade accessible multi-factor authentication system tailored for visually impaired users with WebAuthn, IVR, and phonetic audio OTP.">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <!-- Accessible Skip Navigation Link -->
+  <a href="#main-content" class="skip-link">Skip to main authentication content</a>
+
+  <!-- Managed Live Regions for Screen Reader Announcements -->
+  <div id="sr-polite-announcer" role="status" aria-live="polite" aria-atomic="true" class="visually-hidden"></div>
+  <div id="sr-alert-announcer" role="alert" aria-live="assertive" aria-atomic="true" class="visually-hidden"></div>
+
+  <!-- Global Site Header -->
+  <header class="site-header" role="banner">
+    <div class="brand">
+      <span class="brand-icon" aria-hidden="true">🛡️</span>
+      <div>
+        <h1 class="brand-title">A-MFA Portal</h1>
+      </div>
+      <span class="badge-a11y" aria-label="Accessibility Conformance: WCAG 2.2 Level AAA">WCAG 2.2 AAA</span>
+    </div>
+    <div class="header-controls">
+      <button type="button" id="open-settings-btn" class="btn btn-outline btn-icon" aria-label="Open Accessibility and Audio Preferences">
+        <span aria-hidden="true">⚙️</span> Settings
+      </button>
+      <button type="button" id="open-audit-btn" class="btn btn-outline btn-icon" aria-label="Open Security Audit Log Trail">
+        <span aria-hidden="true">📋</span> Audit Log
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main id="main-content" class="main-wrapper" role="main">
+
+    <!-- Global Alert / Status Box -->
+    <div id="status-alert" class="alert-box alert-info" role="status" style="display: none;">
+      <span id="status-alert-icon" aria-hidden="true">ℹ️</span>
+      <div id="status-alert-message">Ready.</div>
+    </div>
+
+    <!-- STEP 1: Primary Authentication (Email & Password) -->
+    <section id="primary-auth-card" class="auth-card" aria-labelledby="primary-heading">
+      <div class="card-header">
+        <h2 id="primary-heading" class="card-title">Sign In to Your Account</h2>
+        <p class="card-subtitle">
+          Enter your registered email and password to begin the accessible two-step verification process.
+        </p>
+      </div>
+
+      <form id="login-form" novalidate>
+        <div class="form-group">
+          <label for="email-input" class="form-label">
+            <span>Email Address</span>
+          </label>
+          <input type="email" id="email-input" name="email" class="form-input" 
+                 autocomplete="username" required 
+                 value="accessible.user@example.com"
+                 aria-describedby="email-hint">
+          <span id="email-hint" class="input-hint">Demo account pre-filled: accessible.user@example.com</span>
+        </div>
+
+        <div class="form-group">
+          <label for="password-input" class="form-label">
+            <span>Password</span>
+          </label>
+          <input type="password" id="password-input" name="password" class="form-input" 
+                 autocomplete="current-password" required
+                 value="SecurePassword123!"
+                 aria-describedby="password-hint">
+          <span id="password-hint" class="input-hint">Demo password pre-filled: SecurePassword123!</span>
+        </div>
+
+        <button type="submit" id="login-submit-btn" class="btn btn-primary btn-block">
+          Continue to Step 2 Verification
+        </button>
+      </form>
+    </section>
+
+    <!-- STEP 2: Secondary Verification Card (Accessible MFA Options) -->
+    <section id="mfa-auth-card" class="auth-card" aria-labelledby="mfa-heading" style="display: none;">
+      <div class="card-header">
+        <h2 id="mfa-heading" class="card-title">Two-Step Verification</h2>
+        <p id="auth-instructions" class="card-subtitle">
+          Select your preferred verification method below or touch your registered security key.
+        </p>
+      </div>
+
+      <!-- Accessible Navigation Tabs for Factors -->
+      <div class="factors-nav" role="tablist" aria-label="Multi-Factor Verification Channels">
+        <button type="button" role="tab" id="tab-webauthn" class="factor-tab" aria-selected="true" aria-controls="panel-webauthn">
+          <span class="factor-icon" aria-hidden="true">🔑</span>
+          <span>Security Key (Preferred)</span>
+        </button>
+        <button type="button" role="tab" id="tab-ivr" class="factor-tab" aria-selected="false" aria-controls="panel-ivr">
+          <span class="factor-icon" aria-hidden="true">📞</span>
+          <span>Phone Call (IVR)</span>
+        </button>
+        <button type="button" role="tab" id="tab-audio-otp" class="factor-tab" aria-selected="false" aria-controls="panel-audio-otp">
+          <span class="factor-icon" aria-hidden="true">🔊</span>
+          <span>Audio OTP</span>
+        </button>
+        <button type="button" role="tab" id="tab-push" class="factor-tab" aria-selected="false" aria-controls="panel-push">
+          <span class="factor-icon" aria-hidden="true">📲</span>
+          <span>Mobile Push</span>
+        </button>
+      </div>
+
+      <!-- Factor Panel 1: FIDO2 / WebAuthn Touch Activation (Preferred AAL3) -->
+      <div id="panel-webauthn" class="factor-panel" role="tabpanel" aria-labelledby="tab-webauthn">
+        <p class="panel-instructions">
+          Touch your physical security key (YubiKey USB/NFC) or confirm with platform biometrics (Touch ID / Face ID / Windows Hello). Zero code typing is required.
+        </p>
+
+        <div class="webauthn-status-box" aria-live="polite">
+          <div class="touch-icon" aria-hidden="true">👆</div>
+          <p id="webauthn-prompt-text" style="font-weight: 600;">
+            Ready for security key activation.
+          </p>
+        </div>
+
+        <div style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+          <input type="checkbox" id="simulate-key-checkbox" checked style="width: 1.2rem; height: 1.2rem;">
+          <label for="simulate-key-checkbox" style="font-size: 0.95rem; cursor: pointer;">
+            Enable Virtual Key Simulation (Allows testing full flow without physical USB hardware)
+          </label>
+        </div>
+
+        <button type="button" id="webauthn-trigger" class="btn btn-primary btn-block" aria-describedby="auth-instructions">
+          Activate Security Key / Biometrics
+        </button>
+      </div>
+
+      <!-- Factor Panel 2: Interactive Voice Response (IVR) Fallback -->
+      <div id="panel-ivr" class="factor-panel" role="tabpanel" aria-labelledby="tab-ivr" hidden>
+        <p class="panel-instructions">
+          Receive an automated telephone call to your registered phone. Press <strong>1</strong> on the keypad to authorize login.
+        </p>
+
+        <button type="button" id="ivr-trigger" class="btn btn-primary btn-block" style="margin-bottom: 1.25rem;">
+          Call My Registered Phone (+1 ***-***-2831)
+        </button>
+
+        <div id="ivr-call-box" style="display: none;">
+          <div class="alert-box alert-info" role="status">
+            <span aria-hidden="true">📞</span>
+            <div id="ivr-voice-status">Call connected: "Press 1 to authorize login, or press 9 to reject."</div>
+          </div>
+
+          <p style="font-size: 0.9rem; margin-bottom: 0.5rem; text-align: center;">
+            Interactive Telephone Keypad (Web Audio DTMF Tone Generator):
+          </p>
+          <div class="dtmf-keypad" role="group" aria-label="Telephone Keypad">
+            <button type="button" class="dtmf-btn" data-key="1" aria-label="Key 1, Confirm Login">1<span class="dtmf-sub">CONFIRM</span></button>
+            <button type="button" class="dtmf-btn" data-key="2" aria-label="Key 2">2<span class="dtmf-sub">ABC</span></button>
+            <button type="button" class="dtmf-btn" data-key="3" aria-label="Key 3">3<span class="dtmf-sub">DEF</span></button>
+            <button type="button" class="dtmf-btn" data-key="4" aria-label="Key 4">4<span class="dtmf-sub">GHI</span></button>
+            <button type="button" class="dtmf-btn" data-key="5" aria-label="Key 5">5<span class="dtmf-sub">JKL</span></button>
+            <button type="button" class="dtmf-btn" data-key="6" aria-label="Key 6">6<span class="dtmf-sub">MNO</span></button>
+            <button type="button" class="dtmf-btn" data-key="7" aria-label="Key 7">7<span class="dtmf-sub">PQRS</span></button>
+            <button type="button" class="dtmf-btn" data-key="8" aria-label="Key 8">8<span class="dtmf-sub">TUV</span></button>
+            <button type="button" class="dtmf-btn" data-key="9" aria-label="Key 9, Reject Login">9<span class="dtmf-sub">REJECT</span></button>
+            <button type="button" class="dtmf-btn" data-key="*" aria-label="Star Key">*</button>
+            <button type="button" class="dtmf-btn" data-key="0" aria-label="Key 0">0<span class="dtmf-sub">+</span></button>
+            <button type="button" class="dtmf-btn" data-key="#" aria-label="Pound Key">#</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Factor Panel 3: Phonetic Audio OTP Fallback -->
+      <div id="panel-audio-otp" class="factor-panel" role="tabpanel" aria-labelledby="tab-audio-otp" hidden>
+        <p class="panel-instructions">
+          Listen to a high-definition, phonetic spoken one-time code and enter it below.
+        </p>
+
+        <button type="button" id="audio-otp-trigger" class="btn btn-primary btn-block" style="margin-bottom: 1.25rem;">
+          Generate & Read Verification Code
+        </button>
+
+        <div id="audio-otp-player-box" style="display: none;">
+          <div class="audio-controls" role="toolbar" aria-label="Audio Code Playback Controls">
+            <button type="button" id="replay-audio-btn" class="btn btn-secondary" aria-label="Replay Spoken Verification Code (Shortcut: Alt+R)">
+              <span aria-hidden="true">🔁</span> Replay Audio (Alt+R)
+            </button>
+            <div class="speed-control">
+              <label for="speech-rate-slider">Speed:</label>
+              <input type="range" id="speech-rate-slider" min="0.75" max="2.0" step="0.25" value="1.0" class="speed-slider" aria-label="Playback Speech Speed">
+              <span id="speech-rate-val">1.0x</span>
+            </div>
+          </div>
+
+          <!-- Single Consolidated Input Field for OTP (Replaces the Prohibited 6 Split Input Boxes) -->
+          <div class="form-group" style="margin-top: 1rem;">
+            <label for="otp-input" class="form-label">
+              <span>6-Digit Verification Code</span>
+            </label>
+            <input type="text"
+                   id="otp-input"
+                   name="otp"
+                   inputmode="numeric"
+                   pattern="[0-9]*"
+                   maxlength="6"
+                   autocomplete="one-time-code"
+                   aria-describedby="otp-hint"
+                   class="form-input single-otp-input"
+                   placeholder="------">
+            <span id="otp-hint" class="input-hint">Enter the 6-digit verification code without spaces.</span>
+          </div>
+
+          <button type="button" id="submit-otp-btn" class="btn btn-success btn-block">
+            Verify Code
+          </button>
+        </div>
+      </div>
+
+      <!-- Factor Panel 4: Mobile Push Fallback -->
+      <div id="panel-push" class="factor-panel" role="tabpanel" aria-labelledby="tab-push" hidden>
+        <p class="panel-instructions">
+          A secure authorization notification has been sent to your registered smartphone.
+        </p>
+
+        <button type="button" id="push-trigger" class="btn btn-primary btn-block" style="margin-bottom: 1.25rem;">
+          Send Notification to Mobile Device
+        </button>
+
+        <div id="push-notification-box" style="display: none;">
+          <div class="auth-card" style="background: var(--bg-surface); margin-bottom: 1rem;">
+            <p style="font-weight: 700; margin-bottom: 0.5rem;">📲 Login Request Received</p>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+              Are you signing in to A-MFA Portal from Chrome on Linux?
+            </p>
+            <div style="display: flex; gap: 0.75rem;">
+              <button type="button" id="push-approve-btn" class="btn btn-success" style="flex: 1;">
+                ✓ Approve Login
+              </button>
+              <button type="button" id="push-deny-btn" class="btn btn-outline" style="flex: 1;">
+                ✕ Deny
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WCAG 2.2 Dynamic Session Timeout Control (Success Criterion 2.2.1) -->
+      <div id="timeout-banner" class="timeout-banner" role="group" aria-label="Session duration control">
+        <div class="timeout-info">
+          <span aria-hidden="true">⏱️</span>
+          <!-- aria-live="off" prevents screen readers from being spammed every second -->
+          <span id="time-remaining" aria-live="off">Time remaining: 5 minutes 00 seconds</span>
+        </div>
+        <button type="button" id="extend-timer-btn" class="btn btn-outline" aria-label="Add 5 minutes to verification window (Shortcut: Alt+E)">
+          Extend Time (Alt+E)
+        </button>
+      </div>
+
+      <div style="margin-top: 1.5rem; text-align: center;">
+        <button type="button" id="back-to-login-btn" class="btn btn-outline" style="font-size: 0.9rem;">
+          ← Back to Email Sign In
+        </button>
+      </div>
+    </section>
+
+    <!-- STEP 3: Protected Dashboard (Access Granted) -->
+    <section id="dashboard-card" class="auth-card" aria-labelledby="dash-heading" style="display: none;">
+      <div class="card-header">
+        <div class="alert-box alert-success" role="status">
+          <span aria-hidden="true">✅</span>
+          <div>
+            <h2 id="dash-heading" style="font-size: 1.3rem; margin-bottom: 0.25rem;">Authentication Successful</h2>
+            <p>Your identity has been cryptographically verified. Full access granted.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1.5rem; line-height: 1.8;">
+        <p><strong>User:</strong> <span id="dash-email">user@example.com</span></p>
+        <p><strong>Factor Verified:</strong> <span id="dash-factor" class="badge-a11y">FIDO2 / WebAuthn</span></p>
+        <p><strong>Session Token:</strong> <code id="dash-token" style="font-family: var(--font-mono); font-size: 0.85rem; word-break: break-all;">-</code></p>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <button type="button" id="register-new-key-btn" class="btn btn-secondary">
+          🔑 Register New Physical Security Key
+        </button>
+        <button type="button" id="logout-btn" class="btn btn-primary">
+          Sign Out
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Accessible Preferences Dialog (<dialog> with native inert focus management) -->
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <div class="dialog-header">
+      <h2 id="settings-title" style="font-size: 1.25rem;">Accessibility & Audio Settings</h2>
+      <button type="button" class="dialog-close-btn" id="close-settings-btn" aria-label="Close settings dialog">✕</button>
+    </div>
+
+    <form id="preferences-form">
+      <div class="form-group">
+        <label for="theme-select" class="form-label">Visual Theme</label>
+        <select id="theme-select" class="form-input">
+          <option value="HIGH_CONTRAST_DARK">High-Contrast Dark (Default)</option>
+          <option value="YELLOW_BLACK">High-Contrast Yellow on Black (Low Vision / Cataracts)</option>
+          <option value="LIGHT">High-Contrast Light</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="pref-speech-rate" class="form-label">Text-to-Speech Speed</label>
+        <select id="pref-speech-rate" class="form-input">
+          <option value="0.75">0.75x (Deliberate)</option>
+          <option value="1.0" selected>1.0x (Standard)</option>
+          <option value="1.25">1.25x (Fast)</option>
+          <option value="1.5">1.5x (Screen Reader Power User)</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+        <input type="checkbox" id="pref-nato-toggle" checked style="width: 1.2rem; height: 1.2rem;">
+        <label for="pref-nato-toggle" style="cursor: pointer;">
+          NATO Phonetic Assistance ("Alpha, Bravo, Niner")
+        </label>
+      </div>
+
+      <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+        <input type="checkbox" id="pref-earcons-toggle" checked style="width: 1.2rem; height: 1.2rem;">
+        <label for="pref-earcons-toggle" style="cursor: pointer;">
+          Auditory Earcons & Haptic Feedback
+        </label>
+      </div>
+
+      <button type="button" id="save-settings-btn" class="btn btn-primary btn-block">
+        Save Preferences
+      </button>
+    </form>
+  </dialog>
+
+  <!-- Security Audit Trail Modal Dialog -->
+  <dialog id="audit-dialog" aria-labelledby="audit-title">
+    <div class="dialog-header">
+      <h2 id="audit-title" style="font-size: 1.25rem;">Security & Compliance Audit Trail</h2>
+      <button type="button" class="dialog-close-btn" id="close-audit-btn" aria-label="Close audit log dialog">✕</button>
+    </div>
+    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+      Tamper-evident log tracking challenge creation, cryptographic verification, and cloning defense:
+    </p>
+
+    <div class="audit-table-wrapper">
+      <table class="audit-table" aria-label="Security Audit Log Table">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Event</th>
+            <th>Factor</th>
+            <th>IP Address</th>
+          </tr>
+        </thead>
+        <tbody id="audit-table-body">
+          <tr><td colspan="4" style="text-align: center;">Loading audit records...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <button type="button" id="refresh-audit-btn" class="btn btn-secondary btn-block">
+      Refresh Audit Logs
+    </button>
+  </dialog>
+
+  <!-- Application Scripts -->
+  <script src="/js/audio-synthesizer.js"></script>
+  <script src="/js/webauthn-client.js"></script>
+  <script src="/js/session-timer.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
