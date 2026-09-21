@@ -35,20 +35,28 @@ Comprehensive design documentation, C4 architecture models, sequence diagrams, E
 - Node.js version 20+ (Node v22 installed)
 - Modern web browser (Chrome, Edge, Safari, Firefox)
 
-### Installation
+### Running with Docker (One-Command Setup)
+Make sure Docker Desktop is open and running, then:
 ```bash
-# Install required production dependencies
+# Build and start the container
+docker compose up -d --build
+
+# View real-time container logs
+docker compose logs -f
+
+# Stop the container
+docker compose down
+```
+
+### Running Locally without Docker
+```bash
+# 1. Install dependencies
 npm install
-```
 
-### Running Automated Test Suites
-Run the complete suite of 19 automated tests (cryptography, WebAuthn, E2E API integration, and accessibility linting):
-```bash
+# 2. Run automated test suites (19 test cases)
 npm test
-```
 
-### Running the Live Application
-```bash
+# 3. Start the live server
 npm start
 ```
 Open your browser and navigate to:
